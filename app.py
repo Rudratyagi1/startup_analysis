@@ -103,7 +103,55 @@ elif option == 'STARTUP':
 
     if btn1:
         st.title(f'STARTUP ANALYSIS: {selected_startup}')
-        # Display detailed analysis for the selected startup here
+
+        # Dropdown for selecting a startup
+        selected_startup = st.selectbox('Select a Startup', df['startup'].unique())
+
+        # Get the selected startup's data
+        startup_data = df[df['startup'] == selected_startup].iloc[0]
+
+        # Display Company POV details
+        st.subheader('Company POV')
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write(f"**Name**: {startup_data['startup']}")
+            st.write(f"**Investors**: {startup_data['investors']}")
+            st.write(f"**Vertical**: {startup_data['vertical']}")
+            st.write(f"**Sub Vertical**: {startup_data['subvertical']}")
+            st.write(f"**Location**: {startup_data['city']}")
+            st.write(f"**Funding Rounds**: {startup_data['round']}")
+            st.write(f"**amount**: {startup_data['amount']}")
+
+        with col2:
+            st.write(f"**Date**: {startup_data['date']}")
+            st.write(f"**Similar Companies**: {startup_data['startup']}")
+
+        # Visualize funding rounds if applicable
+        funding_rounds_data = df[df['startup'] == selected_startup]['round'].value_counts()
+        if not funding_rounds_data.empty:
+            st.subheader('Funding Rounds Visualization')
+            plt.figure(figsize=(8, 4))
+            sns.barplot(x=funding_rounds_data.index, y=funding_rounds_data.values, palette='viridis')
+            plt.title(f'Funding Rounds for {selected_startup}')
+            plt.xlabel('Funding Rounds')
+            plt.ylabel('Count')
+            st.pyplot(plt)
+
+        # Optionally, you could display a line chart for total funding over time if date information is available
+        # Ensure 'date' is parsed as a datetime in your DataFrame
+        if 'date' in df.columns:
+            df['date'] = pd.to_datetime(df['date'])
+            total_funding_over_time = df.groupby('date')['amount'].sum().reset_index()
+
+            st.subheader('Total Funding Over Time')
+            plt.figure(figsize=(10, 5))
+            sns.lineplot(data=total_funding_over_time, x='date', y='amount', marker='o', color='blue')
+            plt.title('Total Funding Over Time')
+            plt.xlabel('Date')
+            plt.ylabel('Total Funding Amount')
+            st.pyplot(plt)
+
 else:
     # Investor selection and analysis
     investor = st.sidebar.selectbox('SELECT ONE', sorted(set(df['investors'].str.split(',').sum())))
